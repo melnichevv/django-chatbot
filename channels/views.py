@@ -1,4 +1,5 @@
 import json
+import random
 
 import pytz
 import requests
@@ -35,6 +36,24 @@ class Flow(object):
         return FacebookHandler.send_message(msg, contact)
 
     @staticmethod
+    def send_random_message(contact):
+        RANDOM_MSGS = [
+            "Oh that's my pumpkin pie timer gotta run!",
+            "My contact fell out and I can't see anything. I don't even know how I'm typing this. Especially because I have no hands... BRB.",
+            "Playing in the pumpkin patch. Back in a few hours!",
+            "Daily meditation break. You should join me! Deep breaths: 4 counts in, 8 counts out, 10,000 times.",
+            "Coffee break! See ya later percolator.",
+            "Ginger Cat got into the spice rack again. PUMPKIN CATS amiright. Brb.",
+            "I feel like snuggling with Ginger Cat for a while, bye!",
+            "Well this pumpkin pie isn't gonna eat itself. ttyl.",
+            "Oh this is embarrassing. I just spilled myself on my computer. I should really carry around a drink stopper. Back in a bit.",
+            "TRAMPOLINE BREAK! Jk that's a terrible idea, but I do need a break this chat business is exhausting."
+        ]
+        msg = dict(Flow.msg)
+        msg['text'] = random.choice(RANDOM_MSGS)
+        return FacebookHandler.send_message(msg, contact)
+
+    @staticmethod
     def send_image(contact):
         msg = dict(Flow.msg)
         msg['media'] = {
@@ -65,18 +84,47 @@ class Flow(object):
         quick_replies = [
           {
             "content_type": "text",
-            "title": "Red",
-            "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
+            "title": "Send me an image",
+            "payload": "send me an image"
           },
           {
             "content_type": "text",
-            "title": "Green",
-            "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+            "title": "send me a random msg",
+            "payload": "random message"
           }
         ]
         msg['metadata'] = {
             'quick_replies': quick_replies,
             'text': 'Wanna something cool? (:'
+        }
+        return FacebookHandler.send_message(msg, contact)
+
+    @staticmethod
+    def send_code_link(contact):
+        msg = dict(Flow.msg)
+        attachment = {
+            "type": "template",
+            "payload": {
+                "template_type": "generic",
+                "elements": [
+                    {
+                        "title": "Wanna see some code?",
+                        "image_url": "https://assets-cdn.github.com/images/modules/logos_page/GitHub-Mark.png",
+                        "buttons": [
+                            {
+                                "type": "web_url",
+                                "url": "https://github.com/melnichevv/django-chatbot",
+                                "title": "View code on github",
+                                "webview_height_ratio": "tall"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+
+        msg['metadata'] = {
+            'attachment': attachment,
         }
         return FacebookHandler.send_message(msg, contact)
 
@@ -212,10 +260,14 @@ class FacebookHandler(View):
             return Flow.send_hello(contact)
         elif 'image' in text:
             return Flow.send_image(contact)
-        elif 'video' in text:
-            return Flow.send_video(contact)
+        # elif 'video' in text:
+        #     return Flow.send_video(contact)
         elif 'quick replies' in text:
             return Flow.send_quick_replies(contact)
+        elif 'random' in text:
+            return Flow.send_random_message(contact)
+        elif 'code' in text:
+            return Flow.send_code_link(contact)
         return Flow.send_sorry(contact)
 
     @classmethod
