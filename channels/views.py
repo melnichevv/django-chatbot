@@ -89,7 +89,7 @@ class Flow(object):
           },
           {
             "content_type": "text",
-            "title": "send me a random msg",
+            "title": "send me random msg",
             "payload": "random message"
           }
         ]
